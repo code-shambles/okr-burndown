@@ -1,0 +1,256 @@
+<html>
+  <head>
+    <style>
+      html,
+      body,
+      ul {
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-family: sans-serif;
+        background: #f8f8f8;
+      }
+      ul {
+        list-style-type: none;
+      }
+      .kr {
+        position: relative;
+        width: 210mm;
+        height: 148.5mm;
+        background: #fff;
+      }
+      .kr-title {
+        font-weight: normal;
+        margin: 0;
+        position: absolute;
+        top: 4mm;
+        left: 13mm;
+        font-size: 12pt;
+      }
+      .kr-number,
+      .kr-text,
+      .kr-weeks {
+        font-size: 24pt;
+        border: 1mm solid #999;
+      }
+      @media only print {
+        .kr-number,
+        .kr-text {
+          border-color: white;
+        }
+      }
+      .kr-number {
+        width: 18mm;
+        font-weight: bold;
+        text-align: left;
+        color: #30a728!important;
+      }
+      .kr-number::-webkit-inner-spin-button,
+      .kr-number::-webkit-outer-spin-button,
+      .kr-weeks::-webkit-inner-spin-button,
+      .kr-weeks::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .kr-text {
+        width: 169mm;
+      }
+      .kr-weeks {
+        position: absolute;
+        bottom: 24mm;
+        left: 30mm;
+        width: 18mm;
+      }
+      .kr-weeks-label {
+        position: absolute;
+        bottom: 25mm;
+        left: 50mm;
+        font-size: 24pt;
+      }
+      @media only print {
+        .kr-weeks,
+        .kr-weeks-label {
+          display: none;
+        }
+      }
+      .chart {
+        position: absolute;
+        bottom: 20mm;
+        left: 20mm;
+        width: 180mm;
+        height: 110mm;
+        box-sizing: border-box;
+      }
+      .ideal-line {
+        position: absolute;
+        top: 0;
+        left: -1mm;
+        width: 211.5mm;
+        height: 0;
+        border-top: 1.5mm dotted #30a728;
+        transform: rotate(31.3deg);
+        transform-origin: top left;
+      }
+      .axis {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .axis .ticks {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        overflow: visible;
+      }
+      .axis .ticks .tick {
+        position: absolute;
+      }
+      .x-axis {
+        bottom: -2mm;
+        border-bottom: 2mm solid #000;
+      }
+      .x-axis .ticks {
+        right: 0;
+        height: 0;
+      }
+      .x-axis .ticks .tick {
+        top: 2mm;
+        border-left: 1mm solid #000;
+        padding-left: 1mm;
+        padding-top: 2mm;
+      }
+      .x-axis .ticks .tick:last-child {
+        border-color: #30a728;
+        right: -11mm;
+        width: 10mm;
+      }
+      .y-axis {
+        left: -2mm;
+        border-left: 2mm solid #000;
+      }
+      .y-axis .ticks {
+        top: 0;
+        width: 0;
+      }
+      .y-axis .ticks .tick {
+        height: 9mm;
+        right: 2mm;
+        border-top: 1mm solid #000;
+        padding-right: 2mm;
+        white-space: nowrap;
+      }
+      .y-axis .ticks .tick:last-child {
+        top: auto;
+        bottom: -9mm;
+      }
+    </style>
+  </head>
+  <body>
+    <article class="kr">
+      <h3 class="kr-title"><input class="kr-number" id="kr-number" type="number" /><input class="kr-text" type="text" /></h3>
+      <div class="chart">
+        <div class="ideal-line"></div>
+
+        <div class="x-axis axis" id="x-axis">
+          <ul class="ticks" id="x-ticks">
+          </ul>
+        </div>
+
+        <div class="y-axis axis" id="y-axis">
+          <ul class="ticks" id="y-ticks">
+          </ul>
+        </div>
+      </div>
+      <input class="kr-weeks" id="kr-weeks" type="number" />
+      <span class="kr-weeks-label">Weeks</span>
+    </article>
+
+    <script>
+      function createYTicks(number) {
+        const ticksNode = document.getElementById('y-ticks');
+        const skipTick = number < 11 ? 1 : number < 21 ? 2 : number < 31 ? 4 : number < 51 ? 5 : 10;
+        const showUnlabeledTicks = number < 41;
+        let height = 110;
+
+        while (ticksNode.firstChild) {
+          ticksNode.removeChild(ticksNode.firstChild);
+        }
+
+        for (let i = 1; i <= number; i += 1) {
+          if (showUnlabeledTicks || i % skipTick === 0) {
+            const label = i;
+            const yPos = (height / number * i) - 10;
+            const tickNode = document.createElement('li');
+            tickNode.className = 'tick';
+            tickNode.style.bottom = `${yPos}mm`;
+            if (i % skipTick === 0) {
+              tickNode.appendChild(document.createTextNode(label));
+            }
+            ticksNode.appendChild(tickNode);
+          }
+        }
+
+        // 0-tick
+        const tickNode = document.createElement('li');
+        ticksNode.appendChild(tickNode);
+        tickNode.className = 'tick';
+        tickNode.appendChild(document.createTextNode('0'));
+      }
+
+      function createXTicks(weeks) {
+        const ticksNode = document.getElementById('x-ticks');
+        const step = 2;
+        const width = 180;
+
+        while (ticksNode.firstChild) {
+          ticksNode.removeChild(ticksNode.firstChild);
+        }
+
+        for (let i = 0; i < weeks; i += step) {
+          const label = weeks - i;
+          const yPos = (width / weeks * i);
+          const tickNode = document.createElement('li');
+          tickNode.className = 'tick';
+          tickNode.style.left = `${yPos}mm`;
+          tickNode.appendChild(document.createTextNode(label));
+          ticksNode.appendChild(tickNode);
+        }
+
+        // 0-tick
+        const tickNode = document.createElement('li');
+        ticksNode.appendChild(tickNode);
+        tickNode.className = 'tick';
+        tickNode.appendChild(document.createTextNode('🏁'));
+      }
+
+      const numberNode = document.getElementById('kr-number');
+      numberNode.addEventListener('keyup', ev => {
+        if (ev.target.value == parseInt(ev.target.value) && parseInt(ev.target.value) > 0) {
+          createYTicks(parseInt(ev.target.value));
+        }
+        else {
+          ev.target.value = '';
+        }
+      });
+
+      const weeksNode = document.getElementById('kr-weeks');
+      weeksNode.addEventListener('keyup', ev => {
+        if (ev.target.value == parseInt(ev.target.value) && parseInt(ev.target.value) > 0) {
+          createXTicks(parseInt(ev.target.value));
+        }
+        else {
+          ev.target.value = '';
+        }
+      });
+
+      numberNode.value = 5;
+      createYTicks(5);
+
+      weeksNode.value = 13;
+      createXTicks(13);
+    </script>
+  </body>
+</html>
