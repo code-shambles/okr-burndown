@@ -25,54 +25,9 @@
         margin: 0;
         position: absolute;
         top: 4mm;
-        left: 13mm;
-        font-size: 12pt;
-      }
-      .kr-number,
-      .kr-text,
-      .kr-weeks {
-        font-size: 24pt;
-        border: 1mm solid #999;
-      }
-      @media only print {
-        .kr-number,
-        .kr-text {
-          border-color: white;
-        }
-      }
-      .kr-number {
-        width: 18mm;
-        font-weight: bold;
-        text-align: left;
-        color: #30a728!important;
-      }
-      .kr-number::-webkit-inner-spin-button,
-      .kr-number::-webkit-outer-spin-button,
-      .kr-weeks::-webkit-inner-spin-button,
-      .kr-weeks::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      .kr-text {
-        width: 169mm;
-      }
-      .kr-weeks {
-        position: absolute;
-        bottom: 24mm;
-        left: 30mm;
-        width: 18mm;
-      }
-      .kr-weeks-label {
-        position: absolute;
-        bottom: 25mm;
-        left: 50mm;
-        font-size: 24pt;
-      }
-      @media only print {
-        .kr-weeks,
-        .kr-weeks-label {
-          display: none;
-        }
+        left: 23mm;
+        right: 10mm;
+        font-size: 20pt;
       }
       .chart {
         position: absolute;
@@ -84,12 +39,12 @@
       }
       .ideal-line {
         position: absolute;
-        top: 0;
+        bottom: -1mm;
         left: -1mm;
         width: 211.5mm;
         height: 0;
         border-top: 1.5mm dotted #30a728;
-        transform: rotate(31.3deg);
+        transform: rotate(-31.3deg);
         transform-origin: top left;
       }
       .axis {
@@ -111,6 +66,11 @@
       .x-axis {
         bottom: -2mm;
         border-bottom: 2mm solid #000;
+      }
+      .x-axis .axis-label {
+        position: absolute;
+        left: 0;
+        bottom: -15mm;
       }
       .x-axis .ticks {
         right: 0;
@@ -146,43 +106,91 @@
         top: auto;
         bottom: -9mm;
       }
+
+      .kr-form {
+        position: absolute;
+        top: 30mm;
+        right: 20mm;
+        bottom: 30mm;
+        left: 30mm;
+        padding: 3mm;
+        box-shadow: 0 1mm 3mm rgba(0, 0, 0, 0.2);
+        background: #fff;
+      }
+      @media only print {
+        .kr-form {
+          display: none;
+        }
+      }
+      .kr-number,
+      .kr-text,
+      .kr-weeks {
+        font-size: 16pt;
+        border: 1px solid #999;
+        border-radius: 2px;
+        padding: 4px 8px;
+        margin-top: 4px;
+      }
+      .kr-number {
+        width: 18mm;
+        font-weight: bold;
+        text-align: left;
+        color: #30a728 !important;
+      }
+      .kr-number::-webkit-inner-spin-button,
+      .kr-number::-webkit-outer-spin-button,
+      .kr-weeks::-webkit-inner-spin-button,
+      .kr-weeks::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .kr-text {
+        width: calc(100% - 3mm);
+      }
     </style>
   </head>
   <body>
     <article class="kr">
-      <h3 class="kr-title"><input class="kr-number" id="kr-number" type="number" /><input class="kr-text" type="text" /></h3>
+      <h3 class="kr-title" id="kr-title"></h3>
       <div class="chart">
         <div class="ideal-line"></div>
 
         <div class="x-axis axis" id="x-axis">
-          <ul class="ticks" id="x-ticks">
-          </ul>
+          <ul class="ticks" id="x-ticks"></ul>
+          <span class="axis-label">Weeks to go</span>
         </div>
 
-        <div class="y-axis axis" id="y-axis">
-          <ul class="ticks" id="y-ticks">
-          </ul>
-        </div>
+        <div class="y-axis axis" id="y-axis"><ul class="ticks" id="y-ticks"></ul></div>
       </div>
-      <input class="kr-weeks" id="kr-weeks" type="number" />
-      <span class="kr-weeks-label">Weeks</span>
+      <div class="kr-form">
+        Number<br />
+        <input class="kr-number" id="kr-number" type="number" /><br /><br />
+        Key result goal<br />
+        <input class="kr-text" id="kr-text" type="text" /><br /><br />
+        Weeks in this OKR-cycle<br />
+        <input class="kr-weeks" id="kr-weeks" type="number" />
+      </div>
     </article>
 
     <script>
+      function removeChildren(parentNode) {
+        while (parentNode.firstChild) {
+          parentNode.removeChild(parentNode.firstChild);
+        }
+      }
+
       function createYTicks(number) {
         const ticksNode = document.getElementById('y-ticks');
         const skipTick = number < 11 ? 1 : number < 21 ? 2 : number < 31 ? 4 : number < 51 ? 5 : 10;
         const showUnlabeledTicks = number < 41;
         let height = 110;
 
-        while (ticksNode.firstChild) {
-          ticksNode.removeChild(ticksNode.firstChild);
-        }
+        removeChildren(ticksNode);
 
         for (let i = 1; i <= number; i += 1) {
           if (showUnlabeledTicks || i % skipTick === 0) {
             const label = i;
-            const yPos = (height / number * i) - 10;
+            const yPos = (height / number) * i - 10;
             const tickNode = document.createElement('li');
             tickNode.className = 'tick';
             tickNode.style.bottom = `${yPos}mm`;
@@ -211,7 +219,7 @@
 
         for (let i = 0; i < weeks; i += step) {
           const label = weeks - i;
-          const yPos = (width / weeks * i);
+          const yPos = (width / weeks) * i;
           const tickNode = document.createElement('li');
           tickNode.className = 'tick';
           tickNode.style.left = `${yPos}mm`;
@@ -226,22 +234,27 @@
         tickNode.appendChild(document.createTextNode('🏁'));
       }
 
+      const textNode = document.getElementById('kr-text');
+      const headlineNode = document.getElementById('kr-title');
       const numberNode = document.getElementById('kr-number');
+      const weeksNode = document.getElementById('kr-weeks');
       numberNode.addEventListener('keyup', ev => {
         if (ev.target.value == parseInt(ev.target.value) && parseInt(ev.target.value) > 0) {
           createYTicks(parseInt(ev.target.value));
-        }
-        else {
+        } else {
           ev.target.value = '';
         }
+        removeChildren(headlineNode);
+        headlineNode.appendChild(document.createTextNode(event.target.value + ' ' + textNode.value));
       });
-
-      const weeksNode = document.getElementById('kr-weeks');
+      textNode.addEventListener('keyup', ev => {
+        removeChildren(headlineNode);
+        headlineNode.appendChild(document.createTextNode(numberNode.value + ' ' + ev.target.value));
+      });
       weeksNode.addEventListener('keyup', ev => {
         if (ev.target.value == parseInt(ev.target.value) && parseInt(ev.target.value) > 0) {
           createXTicks(parseInt(ev.target.value));
-        }
-        else {
+        } else {
           ev.target.value = '';
         }
       });
